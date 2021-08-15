@@ -19,7 +19,7 @@ public class Application {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/fantasy-football").allowedOrigins("http://localhost:8081");
+                registry.addMapping("/fantasy-football").allowedOrigins("https://be.fx-signal.club");
             }
         };
     }
