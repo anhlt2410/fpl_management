@@ -74,7 +74,7 @@ public class Controller {
     }
 
     @PostMapping("/update-league-result")
-    public ResponseEntity<GameWeekResultDTO> updateFromH2HResult(@RequestBody GameWeekPointDTO dto) {
+    public ResponseEntity<GameWeekResultDTO> updateLeagueResult(@RequestBody GameWeekPointDTO dto) {
         GameWeekResultDTO gameWeekResultDTO = mainService.updateGameWeekResult(dto);
         return new ResponseEntity<GameWeekResultDTO>(gameWeekResultDTO, HttpStatus.OK);
     }

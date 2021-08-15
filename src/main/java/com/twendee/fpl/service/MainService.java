@@ -45,11 +45,13 @@ public class MainService {
                 pairH2HDTO.setTeam1Point(g.getPoint());
                 doneList.add(g.getTeam().getFplId());
 
-                GameWeekResult rival = gameWeekResults.stream().filter(gameWeekResult -> gameWeekResult.getTeam().getFplId().equals(g.getRival().getFplId())).findAny().orElse(null);
-                if (rival != null){
-                    pairH2HDTO.setTeam2Name(rival.getTeam().getFplName());
-                    pairH2HDTO.setTeam2Point(rival.getPoint());
-                    doneList.add(rival.getTeam().getFplId());
+                if (g.getRival() != null){
+                    GameWeekResult rival = gameWeekResults.stream().filter(gameWeekResult -> gameWeekResult.getTeam().getFplId().equals(g.getRival().getFplId())).findAny().orElse(null);
+                    if (rival != null){
+                        pairH2HDTO.setTeam2Name(rival.getTeam().getFplName());
+                        pairH2HDTO.setTeam2Point(rival.getPoint());
+                        doneList.add(rival.getTeam().getFplId());
+                    }
                 }
                 h2HDTOList.add(pairH2HDTO);
             }
