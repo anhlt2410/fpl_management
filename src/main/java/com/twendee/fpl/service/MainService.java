@@ -115,19 +115,6 @@ public class MainService {
 
     public GameWeekResultDTO updateGameWeekResult(GameWeekPointDTO dto)
     {
-        List<GameWeekResult> previousGameWeekResults = new ArrayList<>();
-        if (dto.getGameWeek() > 1){
-            previousGameWeekResults.addAll(gameWeekResultRepository.findByGameWeekOrderByPositionAsc(dto.getGameWeek()-1));
-        }
-
-//        Long top = previousGameWeekResults.stream().filter(g -> g.getPosition() == 1).map(g -> g.getTeam().getFplId()).findAny().orElse(0L);
-//        Long bottom = previousGameWeekResults.stream().filter(g -> g.getPosition() == previousGameWeekResults.size()).map(g -> g.getTeam().getFplId()).findAny().orElse(0L);
-
-        Long top = previousGameWeekResults.get(0).getTeam().getFplId();
-        Long bottom = previousGameWeekResults.get(previousGameWeekResults.size() - 1).getTeam().getFplId();
-
-        List<Long> topAndBottom = Arrays.asList(top, bottom);
-
         List<GameWeekResult> gameWeekResults = gameWeekResultRepository.findByGameWeek(dto.getGameWeek());
         GameWeekResult currentGameWeekResult = gameWeekResults.stream().filter(g -> g.getTeam().getFplId().equals(dto.getTeamId())).findAny().orElse(null);
         GameWeekResult rivalResult = gameWeekResults.stream().filter(g -> {
@@ -144,8 +131,20 @@ public class MainService {
         gameWeekResults.get(currentIndex).setTransfer(dto.getTransfer());
         gameWeekResults.get(currentIndex).setMinusPoints(dto.getMinusPoints());
         gameWeekResults.get(currentIndex).setPoint(calculateRealPoint(dto.getPoint(), dto.getMinusPoints()));
-        gameWeekResults.get(currentIndex).setLocalPoint(getBonusPointFromPreviousGameWeek(topAndBottom, currentGameWeekResult.getTeam().getFplId(), dto.getPoint(), dto.getMinusPoints()));
 
+        List<GameWeekResult> previousGameWeekResults = new ArrayList<>();
+        if (dto.getGameWeek() > 1){
+            previousGameWeekResults.addAll(gameWeekResultRepository.findByGameWeekOrderByPositionAsc(dto.getGameWeek()-1));
+        }
+        if (!CollectionUtils.isEmpty(previousGameWeekResults)){
+            Long top = previousGameWeekResults.get(0).getTeam().getFplId();
+            Long bottom = previousGameWeekResults.get(previousGameWeekResults.size() - 1).getTeam().getFplId();
+            List<Long> topAndBottom = Arrays.asList(top, bottom);
+            gameWeekResults.get(currentIndex).setLocalPoint(getBonusPointFromPreviousGameWeek(topAndBottom, currentGameWeekResult.getTeam().getFplId(), dto.getPoint(), dto.getMinusPoints()));
+        }
+        else{
+            gameWeekResults.get(currentIndex).setLocalPoint(gameWeekResults.get(currentIndex).getPoint());
+        }
         GameWeekResultDTO gameWeekResultDTO = new GameWeekResultDTO(gameWeekResults.get(currentIndex));
 
         gameWeekResults.sort(Comparator.comparing(GameWeekResult::getLocalPoint).reversed());
