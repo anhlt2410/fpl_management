@@ -68,14 +68,9 @@ public class Controller {
     }
 
     @GetMapping("/get-game-week-info")
-    public ResponseEntity<List<GameWeekResultDTO>> getGameWeekInfo(@RequestParam(name = "gameWeek") Integer gameWeek) {
-        List<GameWeekResult> gameWeekResults = gameWeekResultRepository.findByGameWeek(gameWeek);
-        if (CollectionUtils.isEmpty(gameWeekResults)) {
-            return new ResponseEntity(HttpStatus.NO_CONTENT);
-        }
-
-        List<GameWeekResultDTO> gameWeekResultDTOS = gameWeekResults.stream().map(GameWeekResultDTO::new).sorted(Comparator.comparing(GameWeekResultDTO::getPosition)).collect(Collectors.toList());
-        return new ResponseEntity<List<GameWeekResultDTO>>(gameWeekResultDTOS, HttpStatus.OK);
+    public ResponseEntity<FullGameWeekResultDTO> getGameWeekInfo(@RequestParam(name = "gameWeek") Integer gameWeek) {
+        FullGameWeekResultDTO dto = mainService.getFullGameWeekResult(gameWeek);
+        return new ResponseEntity<FullGameWeekResultDTO>(dto, HttpStatus.OK);
     }
 
     @PostMapping("/update-league-result")

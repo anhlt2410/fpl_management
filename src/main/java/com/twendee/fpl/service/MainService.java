@@ -8,13 +8,17 @@ import com.twendee.fpl.repository.GameWeekResultRepository;
 import com.twendee.fpl.repository.TeamRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -28,6 +32,29 @@ public class MainService {
 
     public FullGameWeekResultDTO getFullGameWeekResult(Integer gameWeek){
         FullGameWeekResultDTO dto = new FullGameWeekResultDTO();
+        List<GameWeekResult> gameWeekResults = gameWeekResultRepository.findByGameWeek(gameWeek);
+        List<GameWeekResultDTO> gameWeekResultDTOS = gameWeekResults.stream().map(GameWeekResultDTO::new).sorted(Comparator.comparing(GameWeekResultDTO::getPosition)).collect(Collectors.toList());
+        dto.getGameWeekResultDTOList().addAll(gameWeekResultDTOS);
+
+        List<Long> doneList = new ArrayList<>();
+        List<PairH2HDTO> h2HDTOList = new ArrayList<>();
+        gameWeekResults.forEach(g -> {
+            if (!doneList.contains(g.getTeam().getFplId())) {
+                PairH2HDTO pairH2HDTO = new PairH2HDTO();
+                pairH2HDTO.setTeam1Name(g.getTeam().getFplName());
+                pairH2HDTO.setTeam1Point(g.getPoint());
+                doneList.add(g.getTeam().getFplId());
+
+                GameWeekResult rival = gameWeekResults.stream().filter(gameWeekResult -> gameWeekResult.getTeam().getFplId().equals(g.getRival().getFplId())).findAny().orElse(null);
+                assert rival != null;
+                pairH2HDTO.setTeam2Name(rival.getTeam().getFplName());
+                pairH2HDTO.setTeam2Point(rival.getPoint());
+                doneList.add(rival.getTeam().getFplId());
+                h2HDTOList.add(pairH2HDTO);
+            }
+        });
+
+        dto.getH2HDTOList().addAll(h2HDTOList);
 
         return dto;
     }
